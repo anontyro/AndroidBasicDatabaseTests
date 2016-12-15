@@ -27,48 +27,63 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
+/*
+Main Java Class that has all of the programming information for this Activity
+XML Layouts are stored in " app > res > layout > activity_main.xml " for this layout
+ */
 public class MainActivity extends AppCompatActivity {
+    //create the objects to be used
     protected ListView lvMain;
     protected TextView tvMain;
-    protected Button buReadDB;
     private ArrayList<ItemGroupItem>itemGroupList;
 
+    //Main method that allows for the creation of the Activity (page)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);//binds the layout here
 
+        //link the objects to the objects on the XML view
         lvMain = (ListView)findViewById(R.id.lvMainDatabaseReturn);
         tvMain = (TextView)findViewById(R.id.tvMainTitle);
-        buReadDB = (Button)findViewById(R.id.buReadDB);
 
+        //change the text in the Main text displayed in the layout
         tvMain.setText("Main Database Pull");
 
+        /*
+        Calls to run my custom AsyncTask (AsyncTasks are good when processing data as it will
+        operate in the background and should not slow down UI
+         */
         GetItemTableData getData = new GetItemTableData();
+        //basic exception handling
         try {
+            //make the task run, the ".get()" forces the task to do now
            itemGroupList = getData.execute().get();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            e.printStackTrace(); //display stack trace on error
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            e.printStackTrace(); //display stack trace on error
         }
 
-        System.out.println("Main thread list: "+itemGroupList.size());
+        /*
+        List View is what will display all of the information, A ListAdapter must be assigned to the
+        List View to pass it the data to the XML view to be seen.
+         */
         MainListAdapter listAdapter = new MainListAdapter(itemGroupList);
         lvMain.setAdapter(listAdapter);
 
     }
 
-    public void buttonClick(View view) {
 
-    }
-
-
+    /**
+     * Main processing task that performs an AsyncTask to read all of the data from the web
+     */
     protected class GetItemTableData extends AsyncTask<String,String,ArrayList>{
+
         //Connect to the localhost php document (android uses 10.0.2.2 for localhost connections)
         private String urlVal = "http://10.0.2.2//getItemGroupTable.php";
 
+        //not used but will call processes before the main task happens
         @Override
         protected void onPreExecute() {
             super.onPreExecute();

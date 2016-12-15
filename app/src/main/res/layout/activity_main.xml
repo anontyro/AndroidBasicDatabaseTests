@@ -29,13 +29,6 @@
                 android:id="@+id/tvMainTitle"
                 android:layout_weight="1" />
 
-            <Button
-                android:text="readDB"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/buReadDB"
-                android:onClick="buttonClick"
-                android:layout_weight="0" />
         </LinearLayout>
 
         <ListView
