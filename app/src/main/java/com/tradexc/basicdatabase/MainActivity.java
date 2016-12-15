@@ -4,7 +4,10 @@ import android.os.AsyncTask;
 import android.renderscript.ScriptGroup;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     protected ListView lvMain;
     protected TextView tvMain;
     protected Button buReadDB;
+    private ArrayList<ItemGroupItem>itemGroupList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +47,16 @@ public class MainActivity extends AppCompatActivity {
 
         GetItemTableData getData = new GetItemTableData();
         try {
-            getData.execute().get();
+           itemGroupList = getData.execute().get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+
+        System.out.println("Main thread list: "+itemGroupList.size());
+        MainListAdapter listAdapter = new MainListAdapter(itemGroupList);
+        lvMain.setAdapter(listAdapter);
 
     }
 
@@ -90,18 +99,23 @@ public class MainActivity extends AppCompatActivity {
 
             try{
                 JSONArray json = new JSONArray(inputString);
-                testValue =DBManager.itemGroupColitemgroupid+": "+ json.getJSONObject(0).getString(DBManager.itemGroupColitemgroupid+"\n");
-                testValue +=DBManager.itemGroupColitemgroupidnum+": "+ json.getJSONObject(0).getString(DBManager.itemGroupColitemgroupidnum+"\n");
-                testValue +=DBManager.itemGroupColitemgroupcode+": "+ json.getJSONObject(0).getString(DBManager.itemGroupColitemgroupcode+"\n");
-                testValue +=DBManager.itemGroupColitemgroupname+": "+ json.getJSONObject(0).getString(DBManager.itemGroupColitemgroupname+"\n");
-                testValue +=DBManager.itemGroupColitemgroupstatus+": "+ json.getJSONObject(0).getString(DBManager.itemGroupColitemgroupstatus+"\n");
-                testValue +=DBManager.itemGroupColitemgrouptype+": "+ json.getJSONObject(0).getString(DBManager.itemGroupColitemgrouptype+"\n");
+
+                for(int i = 0; i < json.length();i++){
+                    itemGroupList.add(new ItemGroupItem(
+                            json.getJSONObject(i).getString(DBManager.itemGroupColitemgroupcode),
+                            json.getJSONObject(i).getString(DBManager.itemGroupColitemgroupname),
+                            json.getJSONObject(i).getString(DBManager.itemGroupColitemgroupidnum),
+                            json.getJSONObject(i).getString(DBManager.itemGroupColitemgroupstatus),
+                            json.getJSONObject(i).getString(DBManager.itemGroupColitemgrouptype)
+
+                            ));
+                }
 
             }catch (JSONException ex){
                 ex.getStackTrace();
             }
 
-            publishProgress(testValue);
+            publishProgress("size: "+itemGroupList.size());
             return itemGroupList;
         }
 
@@ -134,5 +148,76 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private class MainListAdapter extends BaseAdapter{
+        ArrayList<ItemGroupItem>itemGroupList;
+        public MainListAdapter(ArrayList<ItemGroupItem> itemGroupList){
+            this.itemGroupList = itemGroupList;
+            System.out.println("From List Adapter size : "+itemGroupList.size());
+        }
+
+        @Override
+        public int getCount() {
+            return itemGroupList.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
+        public View getView(int i, View view, ViewGroup viewGroup) {
+
+            LayoutInflater myInflater = getLayoutInflater();
+            View myView = myInflater.inflate(R.layout.item_group_item,null);
+
+            final ItemGroupItem item = itemGroupList.get(i);
+
+            TextView tvItemCode = (TextView)myView.findViewById(R.id.tvItemGroupCode);
+            tvItemCode.setText(item.itemgroupcode);
+
+            TextView tvItemName = (TextView)myView.findViewById(R.id.tvItemGroupName);
+            tvItemName.setText(item.itemgroupname);
+
+            TextView tvItemIDnum= (TextView)myView.findViewById(R.id.tvItemGroupIdNum);
+            tvItemIDnum.setText(item.itemgroupnum);
+
+            TextView tvItemStatus = (TextView)myView.findViewById(R.id.tvItemGroupStatus);
+            tvItemStatus.setText(item.itemgroupstatus);
+
+
+
+
+            return myView;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
